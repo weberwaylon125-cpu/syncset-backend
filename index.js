@@ -6,10 +6,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// TEST ROUTES 
-// These let your frontend load real data instead of mock JSON.
+// Log every incoming request (for debugging)
+app.use((req, res, next) => {
+  console.log(req.method, req.url);
+  next();
+});
 
-app.get("/conversations", (req, res) => {
+// Conversations route (supports /conversations and /api/conversations)
+app.get(["/conversations", "/api/conversations"], (req, res) => {
   res.json([
     {
       id: "1",
@@ -17,33 +21,37 @@ app.get("/conversations", (req, res) => {
       lastMessagePreview: "Hey! I'm curious about your coaching...",
       channel: "instagram",
       stage: "new",
-      updatedAt: new Date().toISOString()
-    }
+      updatedAt: new Date().toISOString(),
+    },
   ]);
 });
 
-app.get("/messages", (req, res) => {
+// Messages GET (supports /messages and /api/messages)
+app.get(["/messages", "/api/messages"], (req, res) => {
   res.json([
     {
       id: "m1",
       conversationId: req.query.conversationId || "1",
       from: "lead",
       text: "Hey! I've been following you for a while.",
-      createdAt: new Date().toISOString()
-    }
+      createdAt: new Date().toISOString(),
+    },
   ]);
 });
 
-app.post("/messages", (req, res) => {
+// Messages POST (supports /messages and /api/messages)
+app.post(["/messages", "/api/messages"], (req, res) => {
   const { conversationId, text } = req.body;
   res.json({
     id: "m_temp",
     conversationId,
     from: "agent",
     text,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   });
 });
+const PORT = process.env.PORT || 3000;
 
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Backend running at http://localhost:${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Backend running on port ${PORT}`);
+});
